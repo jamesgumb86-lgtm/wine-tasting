@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Host Table</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#130a0d">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M20 6h24c0 16-4 26-12 26S20 22 20 6z' fill='%237d1f30'/%3E%3Cpath d='M32 32v20M22 58h20' stroke='%23c9a35a' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="topbar">
+    <span class="mark">Wine Evening</span>
+    <span>Host table</span>
+  </div>
+
+  <main class="wrap">
+    <header class="hero" style="padding-bottom:26px">
+      <div class="eyebrow">For the host only</div>
+      <h1 style="font-size:clamp(44px,11vw,72px)">The Host Table</h1>
+      <p class="intro">Assign each guest a country and a colour, then send them their personal invitation link. Everything is saved on this device.</p>
+    </header>
+
+    <div class="host-grid">
+      <section class="card">
+        <h2>The evening</h2>
+        <div class="field"><label for="ev">Event name</label><input type="text" id="ev" placeholder="e.g. Nat's Wine Evening"></div>
+        <div class="two">
+          <div class="field"><label for="dt">Date</label><input type="date" id="dt"></div>
+          <div class="field"><label for="hn">Host name</label><input type="text" id="hn" placeholder="Nat"></div>
+        </div>
+        <div class="field"><label for="ph">Your WhatsApp number (optional)</label><input type="tel" id="ph" placeholder="07…"></div>
+        <p class="hint" style="text-align:left;margin-top:0">Guests' bottle photos are sent to this number. Change these details before sending invites — each link carries them.</p>
+      </section>
+
+      <section class="card">
+        <h2>Add a guest</h2>
+        <div class="field"><label for="gn">Guest name</label><input type="text" id="gn" placeholder="Name"></div>
+        <div class="two">
+          <div class="field"><label for="gc">Country</label><select id="gc"></select></div>
+          <div class="field"><label for="gk">Colour</label><select id="gk"><option value="r">Red</option><option value="w">White</option></select></div>
+        </div>
+        <div class="row-btns">
+          <button class="btn" id="add">Add guest</button>
+          <button class="btn ghost" id="surprise">Surprise pairing</button>
+        </div>
+        <p class="err" id="addErr" hidden></p>
+      </section>
+
+      <section class="card">
+        <h2>Guests</h2>
+        <div class="guest-list" id="guests"></div>
+      </section>
+
+      <section class="card">
+        <h2>The cellar board</h2>
+        <div class="board" id="board"></div>
+      </section>
+
+      <section class="card">
+        <h2>Backup</h2>
+        <p class="hint" style="text-align:left;margin:0 0 14px">Your list lives in this browser. Download a backup to move it to another device.</p>
+        <div class="row-btns">
+          <button class="btn ghost" id="exp">Download backup</button>
+          <label class="btn ghost" style="cursor:pointer">Restore backup<input type="file" id="imp" accept="application/json" hidden></label>
+        </div>
+      </section>
+    </div>
+    <footer>Only share guests' own links with them — this page stays with you.</footer>
+  </main>
+  <div class="toast" id="toast"></div>
+
+  <script src="data.js"></script>
+  <script src="shared.js"></script>
+  <script src="host.js"></script>
+</body>
+</html>
