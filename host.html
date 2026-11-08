@@ -17,23 +17,12 @@
 
   <main class="wrap">
     <header class="hero" style="padding-bottom:26px">
-      <div class="eyebrow">For the host only</div>
+      <div class="eyebrow" id="evName">For the host only</div>
       <h1 style="font-size:clamp(44px,11vw,72px)">The Host Table</h1>
-      <p class="intro">Assign each guest a country and a colour, then send them their personal invitation link. Everything is saved on this device.</p>
+      <p class="intro">Give each guest a country and a colour, then send them their five-letter code. They enter it with their name on the main site.</p>
     </header>
 
     <div class="host-grid">
-      <section class="card">
-        <h2>The evening</h2>
-        <div class="field"><label for="ev">Event name</label><input type="text" id="ev" placeholder="e.g. Nat's Wine Evening"></div>
-        <div class="two">
-          <div class="field"><label for="dt">Date</label><input type="date" id="dt"></div>
-          <div class="field"><label for="hn">Host name</label><input type="text" id="hn" placeholder="Nat"></div>
-        </div>
-        <div class="field"><label for="ph">Your WhatsApp number (optional)</label><input type="tel" id="ph" placeholder="07…"></div>
-        <p class="hint" style="text-align:left;margin-top:0">Guests' bottle photos are sent to this number. Change these details before sending invites — each link carries them.</p>
-      </section>
-
       <section class="card">
         <h2>Add a guest</h2>
         <div class="field"><label for="gn">Guest name</label><input type="text" id="gn" placeholder="Name"></div>
@@ -55,23 +44,32 @@
 
       <section class="card">
         <h2>The cellar board</h2>
+        <p class="hint" style="text-align:left;margin:-6px 0 12px">Every slot's code, and who has it.</p>
         <div class="board" id="board"></div>
       </section>
 
       <section class="card">
+        <h2>Preview the countries</h2>
+        <p class="hint" style="text-align:left;margin:-6px 0 16px">See exactly what a guest sees for any country and colour.</p>
+        <div class="gallery" id="gallery"></div>
+      </section>
+
+      <section class="card">
         <h2>Backup</h2>
-        <p class="hint" style="text-align:left;margin:0 0 14px">Your list lives in this browser. Download a backup to move it to another device.</p>
+        <p class="hint" style="text-align:left;margin:0 0 14px">Your guest list lives in this browser. Download a backup to move it to another device.</p>
         <div class="row-btns">
           <button class="btn ghost" id="exp">Download backup</button>
           <label class="btn ghost" style="cursor:pointer">Restore backup<input type="file" id="imp" accept="application/json" hidden></label>
         </div>
       </section>
     </div>
-    <footer>Only share guests' own links with them — this page stays with you.</footer>
+    <footer>Only give each guest their own code — this page stays with you.</footer>
   </main>
   <div class="toast" id="toast"></div>
 
+  <script src="event.js"></script>
   <script src="data.js"></script>
+  <script src="motifs.js"></script>
   <script src="shared.js"></script>
   <script src="host.js"></script>
 </body>

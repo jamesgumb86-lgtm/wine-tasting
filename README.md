@@ -4,13 +4,14 @@ An elegant invitation site for a wine-tasting evening. The host assigns each gue
 
 ## How to use it
 
-1. **Host:** open `host.html` (e.g. `https://<user>.github.io/wine-tasting/host.html`).
-   - Fill in the event name, date, host name and WhatsApp number.
-   - Add guests one by one, choosing a country and colour, or use **Surprise pairing**.
-   - Tap **Send** (or **Copy link**) next to each guest to send their personal invitation.
-2. **Guest:** opens their link → breaks the seal → browses suggestions → buys any wine from their country and colour → fills in **Lock in your bottle** with a photo → it opens the phone's share sheet (pick WhatsApp → the host).
+1. **Set the event:** edit `event.js` with the event name, date and host name.
+2. **Host:** open `host.html` (e.g. `https://<user>.github.io/wine-tasting/host.html`).
+   - Add guests, choosing a country and colour, or use **Surprise pairing**.
+   - Each of the 24 country/colour slots has a fixed five-character code. Tap **Send** to share the code and a short link, or **Copy code**.
+   - **Preview the countries** shows exactly what a guest sees for any country and colour.
+3. **Guest:** goes to the site → enters their code and first name → breaks the seal → filters suggestions by budget → buys any wine from their country and colour → **Lock in your bottle** with a photo → the phone's share sheet opens (pick WhatsApp → the host).
 
-No logins or server: the guest list is saved in the host's browser (download a backup from the host page to move devices), and each invitation link carries its own assignment.
+No logins or server: the guest list is saved in the host's browser (download a backup from the host page to move devices). Changing `salt` in `event.js` changes every code, so leave it alone once codes are sent.
 
 ## Files
 
@@ -18,6 +19,7 @@ No logins or server: the guest list is saved in the host's browser (download a b
 | --- | --- |
 | `index.html`, `app.js` | Guest invitation, reveal, suggestions and lock-in |
 | `host.html`, `host.js` | Host table: assignments, links, cellar board, backup |
+| `event.js` | Event name, date, host and code salt |
 | `data.js` | Countries, suggested wines, notes, pairings and prices |
 | `motifs.js` | Line-art header for each country |
 | `shared.js` | Invite encoding and retailer links |

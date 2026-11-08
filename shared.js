@@ -62,5 +62,32 @@
     return window.WINE_DATA.countries.find((c) => c.id === id);
   }
 
-  window.WE = { encodeInvite, decodeInvite, money, shopLink, compareLink, wineSearcherLink, findCountry };
+  /* ---- short guest codes: one fixed 5-character code per country + colour slot ---- */
+  const ALPHABET = "ACDEFGHJKMNPQRTUVWXY34679"; // no look-alike characters (0/O, 1/I/L, 5/S, 8/B)
+  function fnv(str) {
+    let h = 0x811c9dc5;
+    for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+    return h >>> 0;
+  }
+  function slotCode(countryId, k) {
+    const salt = (window.EVENT && window.EVENT.salt) || "wine";
+    let h = fnv(`${salt}|${countryId}|${k}`), h2 = fnv(`${k}|${countryId}|${salt}`), out = "";
+    for (let i = 0; i < 5; i++) {
+      const src = i < 3 ? h : h2;
+      out += ALPHABET[src % ALPHABET.length];
+      if (i < 3) h = Math.floor(h / ALPHABET.length); else h2 = Math.floor(h2 / ALPHABET.length);
+    }
+    return out;
+  }
+  const normaliseCode = (s) => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  function findByCode(code) {
+    const want = normaliseCode(code);
+    for (const c of window.WINE_DATA.countries) {
+      for (const k of ["r", "w"]) if (slotCode(c.id, k) === want) return { c: c.id, k };
+    }
+    return null;
+  }
+  const siteBase = () => location.href.replace(/[?#].*$/, "").replace(/(index|host)\.html$/, "");
+
+  window.WE = { encodeInvite, decodeInvite, money, shopLink, compareLink, wineSearcherLink, findCountry, slotCode, findByCode, siteBase };
 })();

@@ -356,3 +356,63 @@ window.WINE_DATA = {
     }
   ]
 };
+
+/* Budget-friendly picks (£10 and under), added to each country/colour list.
+   Where no reliable sub-£10 example was found, none is listed. */
+(function () {
+  const add = {
+    "fr-red": { name: "Aldi Château Les Trois Manoirs Médoc Cru Bourgeois", grape: "Merlot & Cabernet", region: "Médoc, Bordeaux",
+      note: "Classic claret: blackcurrant, cedar and firm structure.", pair: "Lamb chops or a steak frites.",
+      buy: [{ shop: "Aldi", price: 8.99 }] },
+    "fr-white": { name: "Aldi Chassaux et Fils Picpoul de Pinet", grape: "Picpoul", region: "Languedoc",
+      note: "Lemony, salty and refreshing.", pair: "Mussels or fish tacos.",
+      buy: [{ shop: "Aldi", price: 7.99 }] },
+    "it-red": { name: "Waitrose Blueprint Chianti", grape: "Sangiovese", region: "Tuscany",
+      note: "Sour cherry, dried herbs and food-friendly acidity.", pair: "Pizza or spaghetti bolognese.",
+      buy: [{ shop: "Waitrose", price: 8.5 }] },
+    "it-white": { name: "Asda Extra Special Fiano Terre Siciliane", grape: "Fiano", region: "Sicily",
+      note: "Peach, honeysuckle and a nutty, rounded feel.", pair: "Prawn curry or roast chicken.",
+      buy: [{ shop: "Asda", price: 6.0 }] },
+    "es-red": { name: "Asda Extra Special Marques del Norte Rioja", grape: "Tempranillo", region: "Rioja",
+      note: "Strawberry, vanilla and soft oak.", pair: "Chorizo and patatas bravas.",
+      buy: [{ shop: "Asda", price: 8.07 }] },
+    "es-white": { name: "Aldi Specially Selected Baron Amarillo Albariño", grape: "Albariño", region: "Rías Baixas",
+      note: "Zesty peach with a sea-breeze tang.", pair: "Calamari or garlic prawns.",
+      buy: [{ shop: "Aldi", price: 8.99 }] },
+    "pt-red": { name: "Mimo Moutinho Lisbon Red", grape: "Castelão blend", region: "Lisboa",
+      note: "Juicy, smooth and easy-going.", pair: "Margherita pizza or herby roast chicken.",
+      buy: [{ shop: "Aldi", price: 5.99 }] },
+    "pt-white": { name: "Tesco Por do Sol Vinho Verde", grape: "Loureiro blend", region: "Vinho Verde",
+      note: "Light, lightly spritzy and citrusy.", pair: "Summer rolls or salads.",
+      buy: [{ shop: "Tesco", price: 5.25 }] },
+    "de-white": { name: "Lidl Mosel Riesling", grape: "Riesling", region: "Mosel",
+      note: "Off-dry apple and lime — very easy to like.", pair: "Ham, peaches and burrata.",
+      buy: [{ shop: "Lidl (in store)", price: 4.99 }] },
+    "gr-red": { name: "Skouras Agiorgitiko", grape: "Agiorgitiko", region: "Peloponnese",
+      note: "Soft red fruit, sweet spice and supple tannins.", pair: "Souvlaki or lamb kebabs.",
+      buy: [{ shop: "Aldi", price: 8.99 }] },
+    "gr-white": { name: "M&S Found Moschofilero & Roditis", grape: "Moschofilero & Roditis", region: "Peloponnese",
+      note: "Floral, grapey and crisp.", pair: "Chicken satay noodle salad.",
+      buy: [{ shop: "M&S", price: 8.5 }] },
+    "za-white": { name: "Waitrose Blueprint Fairtrade Chenin Blanc", grape: "Chenin Blanc", region: "Western Cape",
+      note: "Apple, melon and a fresh finish.", pair: "Fried chicken sandwich.",
+      buy: [{ shop: "Waitrose", price: 6.99 }] },
+    "au-red": { name: "Co-op Irresistible Shiraz Cabernet", grape: "Shiraz & Cabernet", region: "South Australia",
+      note: "Plummy, spicy and generous.", pair: "Burgers or sausage casserole.",
+      buy: [{ shop: "Co-op", price: 9.5 }] },
+    "au-white": { name: "Lidl Limestone Coast Chardonnay", grape: "Chardonnay", region: "Limestone Coast",
+      note: "Ripe stone fruit with a light, creamy touch.", pair: "Courgette fritters or roast chicken.",
+      buy: [{ shop: "Lidl (in store)", price: 5.99 }] },
+    "cl-red": { name: "Estevez Merlot", grape: "Merlot", region: "Central Valley",
+      note: "Soft plum and a smooth, easy finish.", pair: "Spaghetti bolognese or burgers.",
+      buy: [{ shop: "Aldi", price: 4.69 }] },
+    "ar-red": { name: "Co-op Fairtrade Organic Malbec", grape: "Malbec", region: "Mendoza",
+      note: "Blackberry and violet, soft and juicy.", pair: "Chilli or beef tacos.",
+      buy: [{ shop: "Co-op", price: 8.65 }] }
+  };
+  Object.entries(add).forEach(([key, wine]) => {
+    const [id, colour] = key.split("-");
+    const c = window.WINE_DATA.countries.find((x) => x.id === id);
+    if (c) c.wines[colour].push(wine);
+  });
+})();

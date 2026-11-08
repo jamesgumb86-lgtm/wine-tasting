@@ -1,6 +1,7 @@
-/* Guest page: reveal, suggestions, lock-in and send to the host. */
+/* Guest page: code entry, reveal, suggestions with budget filter, lock-in and send to the host. */
 (function () {
   const app = document.getElementById("app");
+  const EV = window.EVENT || { name: "Wine Evening", date: "", host: "Nat" };
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
   function toast(msg) {
@@ -17,13 +18,6 @@
     del(k) { try { localStorage.removeItem(k); } catch (e) {} }
   };
 
-  function readInvite() {
-    const params = new URLSearchParams(location.search);
-    let code = params.get("i");
-    if (!code && location.hash.length > 1) code = new URLSearchParams(location.hash.slice(1)).get("i");
-    return code ? { code, data: WE.decodeInvite(code) } : null;
-  }
-
   function fmtDate(d) {
     if (!d) return "";
     const dt = new Date(d + "T12:00:00");
@@ -31,27 +25,46 @@
     return dt.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
   }
 
-  /* ---------------- no invite ---------------- */
-  function renderNoInvite(bad) {
+  /* ---------------- code entry ---------------- */
+  function renderEntry(prefill, error) {
     app.innerHTML = `
       <div class="invite">
-        <div class="invite-card fade-in">
-          <div class="eyebrow">By invitation</div>
+        <form class="invite-card fade-in" id="entry" novalidate>
+          <div class="eyebrow">${esc(EV.name || "By invitation")}</div>
           <h1>A <em>wine</em> evening</h1>
-          <p>${bad ? "That invitation link doesn't look quite right. Paste the full link your host sent you." : "Each guest has their own invitation link. Open the one your host sent you, or paste it here."}</p>
+          <p>${EV.date ? esc(fmtDate(EV.date)) + "<br>" : ""}Enter the code ${esc(EV.host || "your host")} sent you to discover your wine.</p>
           <div class="field" style="margin-top:26px;text-align:left">
-            <label for="paste">Your invitation link</label>
-            <input type="text" id="paste" placeholder="https://…" autocomplete="off">
+            <label for="code">Your code</label>
+            <input type="text" id="code" class="code-input" maxlength="7" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="•••••" value="${esc(prefill || "")}">
           </div>
-          <button class="btn" id="go">Open invitation</button>
-        </div>
+          <div class="field" style="text-align:left">
+            <label for="name">Your first name</label>
+            <input type="text" id="name" autocomplete="given-name" placeholder="Name">
+          </div>
+          <button class="btn" type="submit">Open my invitation</button>
+          <p class="err" id="entryErr" ${error ? "" : "hidden"}>${esc(error || "")}</p>
+        </form>
       </div>`;
-    document.getElementById("go").onclick = () => {
-      const v = document.getElementById("paste").value.trim();
-      const m = v.match(/[?#&]i=([A-Za-z0-9_-]+)/) || v.match(/^([A-Za-z0-9_-]{20,})$/);
-      if (!m) return toast("Paste the whole link");
-      location.search = "?i=" + m[1];
+    const focus = prefill ? "name" : "code";
+    setTimeout(() => document.getElementById(focus).focus(), 50);
+    document.getElementById("entry").onsubmit = (e) => {
+      e.preventDefault();
+      const code = document.getElementById("code").value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+      const name = document.getElementById("name").value.trim();
+      const err = document.getElementById("entryErr");
+      const slot = WE.findByCode(code);
+      if (!slot) { err.hidden = false; err.textContent = "That code isn't recognised — check it with " + (EV.host || "your host") + "."; return; }
+      if (!name) { err.hidden = false; err.textContent = "Add your first name."; return; }
+      store.set("we-guest", { code, name });
+      history.replaceState(null, "", location.pathname);
+      start(fromCode(code, name));
     };
+  }
+
+  function fromCode(code, name) {
+    const slot = WE.findByCode(code);
+    if (!slot) return null;
+    return { key: code + "-" + name.toLowerCase(), data: { n: name, c: slot.c, k: slot.k, e: EV.name, d: EV.date, h: EV.host, p: "" } };
   }
 
   /* ---------------- sealed invitation ---------------- */
@@ -67,14 +80,23 @@
         </div>
       </div>`;
     document.getElementById("seal").onclick = () => {
-      store.set("we-opened-" + inv.code, true);
+      store.set("we-opened-" + inv.key, true);
       onOpen();
     };
   }
 
+  /* ---------------- budget ---------------- */
+  const BANDS = [
+    { id: "all", label: "Show all", test: () => true },
+    { id: "u10", label: "Up to £10", test: (p) => p <= 10 },
+    { id: "u15", label: "£10–£15", test: (p) => p > 10 && p <= 15 },
+    { id: "u20", label: "£15–£20", test: (p) => p > 15 && p <= 20 }
+  ];
+  const lowest = (w) => Math.min(...w.buy.map((b) => b.price));
+
   /* ---------------- main reveal ---------------- */
   function priceRows(w) {
-    const min = Math.min(...w.buy.map((b) => b.price));
+    const min = lowest(w);
     const distinct = new Set(w.buy.map((b) => b.price)).size > 1;
     return w.buy.map((b) => {
       const link = WE.shopLink(b.shop, w.name);
@@ -99,17 +121,40 @@
       </article>`;
   }
 
+  function renderWines(c, colour, bandId, budgetKey) {
+    const band = BANDS.find((b) => b.id === bandId) || BANDS[0];
+    const list = c.wines[colour].slice().sort((a, b) => lowest(a) - lowest(b)).filter((w) => band.test(lowest(w)));
+    const colourWord = colour === "red" ? "red" : "white";
+    document.getElementById("chips").innerHTML = BANDS.map((b) =>
+      `<button type="button" class="chip ${b.id === band.id ? "on" : ""}" data-band="${b.id}" aria-pressed="${b.id === band.id}">${b.label}</button>`
+    ).join("");
+    document.getElementById("wineList").innerHTML = list.length
+      ? list.map(wineCard).join("")
+      : `<div class="wine none">
+          <h3>Nothing listed in this range</h3>
+          <p class="note">${esc(c.name)} ${colourWord}s at this price are harder to find on supermarket shelves, but they're out there.</p>
+          <div class="compare"><a href="${WE.compareLink(c.name + " " + colourWord + " wine")}" target="_blank" rel="noopener">Search every supermarket ↗</a></div>
+        </div>`;
+    document.getElementById("chips").onclick = (e) => {
+      const b = e.target.closest("[data-band]");
+      if (!b) return;
+      if (budgetKey) store.set(budgetKey, b.dataset.band);
+      renderWines(c, colour, b.dataset.band, budgetKey);
+    };
+  }
+
   function renderReveal(inv) {
     const d = inv.data;
     const c = WE.findCountry(d.c);
-    if (!c) return renderNoInvite(true);
+    if (!c) return renderEntry("", "Something went wrong — enter your code again.");
     const colour = d.k === "r" ? "red" : "white";
     const word = c[colour];
     document.documentElement.style.setProperty("--accent", c.accent);
-    document.title = `${c.name} · ${colour === "red" ? "Red" : "White"} — Wine Evening`;
+    document.title = `${c.name} · ${colour === "red" ? "Red" : "White"} — ${EV.name || "Wine Evening"}`;
 
     app.innerHTML = `
       <div class="wrap">
+        ${inv.preview ? `<div class="preview-bar">Host preview · <a href="host.html">Back to host table</a></div>` : ""}
         <header class="hero">
           <p class="greeting fade-in">${esc(d.n)}, your wine comes from</p>
           <div class="motif">${window.MOTIFS[c.id] || ""}</div>
@@ -126,9 +171,10 @@
           <div class="block-head">
             <div class="eyebrow">Inspiration</div>
             <h2>A few bottles to consider</h2>
-            <p>Examples only — bring any ${colour} wine from ${esc(c.name)} that takes your fancy, roughly £10–£20.</p>
+            <p>Examples only — bring any ${colour} wine from ${esc(c.name)} that suits you and your budget.</p>
           </div>
-          <div class="wines">${c.wines[colour].map(wineCard).join("")}</div>
+          <div class="chips" id="chips" role="group" aria-label="Budget"></div>
+          <div class="wines" id="wineList"></div>
           <p class="freedom">Found something else you love? Even better. Go with your instinct.</p>
         </section>
 
@@ -140,10 +186,15 @@
           Prices are guides gathered ${esc(window.WINE_DATA.updated)}; “about” means a typical shelf price.<br>
           Offers change weekly — use the compare links for today's best deal.<br>
           Please drink responsibly. ${esc(c.toast)}!
+          ${inv.preview ? "" : `<br><br><a href="#" id="switch">Not ${esc(d.n)}? Enter a different code</a>`}
         </footer>
       </div>`;
 
+    const budgetKey = inv.preview ? null : "we-budget-" + inv.key;
+    renderWines(c, colour, (budgetKey && store.get(budgetKey)) || "all", budgetKey);
     renderLock(inv, c, colour);
+    const sw = document.getElementById("switch");
+    if (sw) sw.onclick = (e) => { e.preventDefault(); store.del("we-guest"); window.scrollTo(0, 0); renderEntry(""); };
   }
 
   /* ---------------- lock-in ---------------- */
@@ -159,7 +210,7 @@
         cv.height = Math.round(img.height * scale);
         cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
         URL.revokeObjectURL(url);
-        cv.toBlob((blob) => resolve({ blob, dataUrl: cv.toDataURL("image/jpeg", 0.72) }), "image/jpeg", 0.82);
+        resolve(cv.toDataURL("image/jpeg", 0.75));
       };
       img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("bad image")); };
       img.src = url;
@@ -203,7 +254,6 @@
         if (e && e.name === "AbortError") return false;
       }
     }
-    // Fallback: open WhatsApp with the text, the guest attaches the photo themselves.
     statusEl.innerHTML = `Your browser can't attach the photo automatically. WhatsApp will open with your details — just add the bottle photo before sending.`;
     window.open(waLink(d, text), "_blank", "noopener");
     return true;
@@ -211,9 +261,20 @@
 
   function renderLock(inv, c, colour) {
     const d = inv.data;
-    const key = "we-lock-" + inv.code;
     const block = document.getElementById("lockBlock");
     const host = d.h || "your host";
+
+    if (inv.preview) {
+      block.innerHTML = `
+        <div class="block-head">
+          <div class="eyebrow">Your choice</div>
+          <h2>Lock in your bottle</h2>
+          <p>Guests add their wine, where they bought it and a photo of the label here, then send it straight to ${esc(host)}. Hidden in preview.</p>
+        </div>`;
+      return;
+    }
+
+    const key = "we-lock-" + inv.key;
     const saved = store.get(key);
 
     if (saved && saved.sent) {
@@ -282,13 +343,12 @@
       const f = e.target.files && e.target.files[0];
       if (!f) return;
       try {
-        const { dataUrl } = await compressImage(f);
-        state.photo = dataUrl;
+        state.photo = await compressImage(f);
         const drop = document.getElementById("drop");
         const old = drop.querySelector("img, div");
         if (old) old.remove();
         const img = document.createElement("img");
-        img.src = dataUrl;
+        img.src = state.photo;
         img.alt = "Your bottle";
         drop.prepend(img);
       } catch (err) {
@@ -309,7 +369,7 @@
       if (!lock.wine) { err.hidden = false; err.textContent = "Add the name of your wine."; return; }
       if (!lock.photo) { err.hidden = false; err.textContent = "Add a photo of the bottle for " + host + "."; return; }
       err.hidden = true;
-      if (!store.set(key, lock)) { lock.photoTooBig = true; store.set(key, { ...lock, photo: null }); }
+      if (!store.set(key, lock)) store.set(key, { ...lock, photo: null });
       const btn = document.getElementById("lockBtn");
       btn.disabled = true;
       const sent = await sendToHost(d, c, colour, lock, document.getElementById("lockStatus"));
@@ -323,11 +383,34 @@
   }
 
   /* ---------------- boot ---------------- */
-  const inv = readInvite();
-  if (!inv) return renderNoInvite(false);
-  if (!inv.data) return renderNoInvite(true);
-  if (inv.data.d) document.getElementById("topDate").textContent = fmtDate(inv.data.d);
-  const opened = store.get("we-opened-" + inv.code);
-  if (opened) renderReveal(inv);
-  else renderSealed(inv, () => { window.scrollTo(0, 0); renderReveal(inv); });
+  function start(inv) {
+    if (!inv) return renderEntry("", "That code isn't recognised.");
+    if (inv.data.d) document.getElementById("topDate").textContent = fmtDate(inv.data.d);
+    if (inv.preview || store.get("we-opened-" + inv.key)) return renderReveal(inv);
+    renderSealed(inv, () => { window.scrollTo(0, 0); renderReveal(inv); });
+  }
+
+  const params = new URLSearchParams(location.search);
+  if (EV.date) document.getElementById("topDate").textContent = fmtDate(EV.date);
+
+  // Host preview: ?preview=it&k=r
+  if (params.get("preview")) {
+    const c = WE.findCountry(params.get("preview"));
+    const k = params.get("k") === "w" ? "w" : "r";
+    if (c) return start({ preview: true, key: "preview", data: { n: "Guest", c: c.id, k, e: EV.name, d: EV.date, h: EV.host } });
+  }
+
+  // Older long invitation links still work
+  if (params.get("i")) {
+    const data = WE.decodeInvite(params.get("i"));
+    if (data) return start({ key: params.get("i"), data });
+  }
+
+  const codeParam = (params.get("c") || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const savedGuest = store.get("we-guest");
+  if (savedGuest && (!codeParam || codeParam === savedGuest.code)) {
+    const inv = fromCode(savedGuest.code, savedGuest.name);
+    if (inv) return start(inv);
+  }
+  renderEntry(codeParam && WE.findByCode(codeParam) ? codeParam : "");
 })();
