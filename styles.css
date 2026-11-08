@@ -263,3 +263,4 @@ footer { text-align: center; color: var(--faint); font-size: 12px; padding: 40px
 .tile .mini svg { width: 100%; height: auto; }
 .tile .nm { font-family: var(--serif); font-size: 22px; margin: 4px 0 10px; }
 .tile .row-btns .btn { padding: 8px 10px; font-size: 10px; }
+.field textarea { resize: vertical; line-height: 1.5; }

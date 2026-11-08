@@ -68,6 +68,61 @@
     addGuest(c, k);
   };
 
+  /* ---- auto-assign ---- */
+  const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+  // Pick a free slot: prefer countries nobody has yet, then the colour with fewer guests.
+  function pickSlot(current) {
+    const used = (c, k) => current.some((g) => g.c === c && g.k === k);
+    const reds = current.filter((g) => g.k === "r").length;
+    const whites = current.length - reds;
+    const prefer = reds <= whites ? ["r", "w"] : ["w", "r"];
+    const unusedCountries = shuffle(countries.filter((c) => !current.some((g) => g.c === c.id)));
+    for (const c of unusedCountries) for (const k of prefer) if (!used(c.id, k)) return { c: c.id, k };
+    for (const k of prefer) {
+      const c = shuffle(countries.slice()).find((x) => !used(x.id, k));
+      if (c) return { c: c.id, k };
+    }
+    return null;
+  }
+
+  const parseNames = (text) => text.split(/[\n,]+/).map((s) => s.trim()).filter(Boolean);
+
+  $("auto").onclick = () => {
+    const err = $("autoErr");
+    const names = parseNames($("bulk").value);
+    if (!names.length) { err.hidden = false; err.textContent = "Type at least one name."; return; }
+    const free = countries.length * 2 - state.guests.length;
+    if (names.length > free) { err.hidden = false; err.textContent = `Only ${free} slot${free === 1 ? "" : "s"} left — remove some names.`; return; }
+    const existing = new Set(state.guests.map((g) => g.n.toLowerCase()));
+    const dupes = names.filter((n) => existing.has(n.toLowerCase()));
+    if (dupes.length && !confirm(`${dupes.join(", ")} already ${dupes.length === 1 ? "has" : "have"} a slot. Add again anyway?`)) return;
+    err.hidden = true;
+    names.forEach((n) => { const s = pickSlot(state.guests); state.guests.push({ n, c: s.c, k: s.k }); });
+    save();
+    $("bulk").value = "";
+    render();
+    toast(`${names.length} guest${names.length === 1 ? "" : "s"} assigned`);
+    $("guests").scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  $("reshuffle").onclick = () => {
+    if (!state.guests.length) return;
+    if (!confirm("Give everyone a new country and colour? Only do this before you've sent any codes.")) return;
+    const names = shuffle(state.guests.map((g) => g.n));
+    state.guests = [];
+    names.forEach((n) => { const s = pickSlot(state.guests); state.guests.push({ n, c: s.c, k: s.k }); });
+    save();
+    render();
+    toast("Reshuffled");
+  };
+
+  $("sendAll").onclick = () => {
+    if (!state.guests.length) return;
+    const lines = state.guests.map((g) => `${g.n}: ${WE.slotCode(g.c, g.k)}`);
+    copy(`${EV.name || "Wine evening"} codes\nEnter at ${base()}\n\n${lines.join("\n")}`, "All codes");
+  };
+
   /* ---- guest list ---- */
   async function copy(text, label) {
     try { await navigator.clipboard.writeText(text); toast(label + " copied"); }
@@ -78,6 +133,7 @@
     `Hi ${g.n}! 🍷 You're invited${EV.name ? " to " + EV.name : ""}.\n\nYour code is ${code}\nEnter it here to discover your wine: ${shortLink(code)}`;
 
   function renderGuests() {
+    $("guestTools").hidden = !state.guests.length;
     if (!state.guests.length) { $("guests").innerHTML = `<p class="empty">No guests yet.</p>`; return; }
     $("guests").innerHTML = state.guests.map((g, i) => {
       const c = WE.findCountry(g.c);

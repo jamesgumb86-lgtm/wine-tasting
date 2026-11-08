@@ -24,7 +24,18 @@
 
     <div class="host-grid">
       <section class="card">
-        <h2>Add a guest</h2>
+        <h2>Add your guests</h2>
+        <div class="field">
+          <label for="bulk">Guest names — one per line, or separated by commas</label>
+          <textarea id="bulk" rows="6" placeholder="James&#10;Helen&#10;Sophie, Tom, Priya"></textarea>
+        </div>
+        <button class="btn" id="auto">Auto-assign</button>
+        <p class="hint" style="margin-top:10px">Spreads guests across as many countries as possible and balances reds and whites.</p>
+        <p class="err" id="autoErr" hidden></p>
+      </section>
+
+      <section class="card">
+        <h2>Or add one by one</h2>
         <div class="field"><label for="gn">Guest name</label><input type="text" id="gn" placeholder="Name"></div>
         <div class="two">
           <div class="field"><label for="gc">Country</label><select id="gc"></select></div>
@@ -40,6 +51,10 @@
       <section class="card">
         <h2>Guests</h2>
         <div class="guest-list" id="guests"></div>
+        <div class="row-btns" id="guestTools" style="margin-top:16px">
+          <button class="btn ghost small" id="sendAll">Copy code list (for you)</button>
+          <button class="btn ghost small" id="reshuffle">Reshuffle everyone</button>
+        </div>
       </section>
 
       <section class="card">
