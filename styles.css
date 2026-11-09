@@ -298,3 +298,14 @@ footer { text-align: center; color: var(--faint); font-size: 12px; padding: 40px
 .menu-item .mini svg { width: 100%; height: auto; }
 .menu-item h3 { font-family: var(--serif); font-weight: 400; font-size: 28px; line-height: 1.15; margin-top: 6px; }
 .menu-item .by { font-family: var(--serif); font-style: italic; color: var(--muted); margin-top: 4px; font-size: 17px; }
+
+/* ---------- red/white balance ---------- */
+.balance { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 10px 14px; margin: -4px 0 14px; border: 1px solid var(--line); font-size: 14px; }
+.balance > span { display: inline-flex; align-items: center; gap: 7px; }
+.balance .dot { width: 11px; height: 11px; }
+.balance .bal-msg { font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--muted); }
+.balance.ok { border-color: var(--gold-soft); }
+.balance.ok .bal-msg { color: var(--gold); }
+.balance.off { border-color: #b86a5a; background: rgba(184,106,90,.08); }
+.balance.off .bal-msg { color: #e4a08f; }
+.balance .btn { margin-left: auto; }

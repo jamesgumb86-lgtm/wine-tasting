@@ -7,7 +7,7 @@
   <meta name="robots" content="noindex">
   <meta name="theme-color" content="#130a0d">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M20 6h24c0 16-4 26-12 26S20 22 20 6z' fill='%237d1f30'/%3E%3Cpath d='M32 32v20M22 58h20' stroke='%23c9a35a' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles.css?v=20261109144657">
+  <link rel="stylesheet" href="styles.css?v=20261109152336">
 </head>
 <body>
   <div class="topbar">
@@ -30,7 +30,7 @@
           <textarea id="bulk" rows="6" placeholder="James&#10;Helen&#10;Sophie, Tom, Priya"></textarea>
         </div>
         <button class="btn" id="auto">Auto-assign</button>
-        <p class="hint" style="margin-top:10px">Spreads guests across as many countries as possible and balances reds and whites.</p>
+        <p class="hint" style="margin-top:10px">Spreads guests across as many countries as possible, with an even split of reds and whites.</p>
         <p class="err" id="autoErr" hidden></p>
       </section>
 
@@ -50,7 +50,8 @@
 
       <section class="card">
         <h2>Guests</h2>
-        <p class="hint" id="guestCount" style="text-align:left;margin:-6px 0 6px"></p>
+        <div class="balance" id="balance" hidden></div>
+        <p class="hint" id="guestCount" style="text-align:left;margin:0 0 6px"></p>
         <p class="hint" style="text-align:left;margin:0 0 8px">When a bottle photo arrives on WhatsApp, tap <b>Confirm</b>. If someone's struggling, tap <b>Swap</b> to give them a slot that hasn't been given out.</p>
         <div class="guest-list" id="guests"></div>
         <div class="row-btns" id="guestTools" style="margin-top:16px">
@@ -94,10 +95,10 @@
   </main>
   <div class="toast" id="toast"></div>
 
-  <script src="event.js?v=20261109144657"></script>
-  <script src="data.js?v=20261109144657"></script>
-  <script src="motifs.js?v=20261109144657"></script>
-  <script src="shared.js?v=20261109144657"></script>
-  <script src="host.js?v=20261109144657"></script>
+  <script src="event.js?v=20261109152336"></script>
+  <script src="data.js?v=20261109152336"></script>
+  <script src="motifs.js?v=20261109152336"></script>
+  <script src="shared.js?v=20261109152336"></script>
+  <script src="host.js?v=20261109152336"></script>
 </body>
 </html>

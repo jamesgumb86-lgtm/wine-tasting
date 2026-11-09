@@ -56,16 +56,66 @@
     toast(`${n} — code ${WE.slotCode(c, k)}`);
   }
 
-  $("add").onclick = () => addGuest($("gc").value, $("gk").value);
+  /* ---- red/white balance ---- */
+  const tally = (list = state.guests) => {
+    const r = list.filter((g) => g.k === "r").length;
+    return { r, w: list.length - r };
+  };
+  const lighter = () => { const t = tally(); return t.r <= t.w ? "r" : "w"; };
+
+  function renderBalance() {
+    const { r, w } = tally();
+    const el = $("balance");
+    if (!state.guests.length) { el.hidden = true; return; }
+    el.hidden = false;
+    const diff = Math.abs(r - w);
+    const more = r > w ? "reds" : "whites", fewer = r > w ? "whites" : "reds";
+    el.className = "balance " + (diff > 1 ? "off" : "ok");
+    el.innerHTML = `<span><span class="dot red"></span>${r} red</span><span><span class="dot white"></span>${w} white</span>
+      <span class="bal-msg">${diff === 0 ? "Perfectly balanced" : diff === 1 ? "Balanced (odd number of guests)" : `${diff} more ${more} than ${fewer}`}</span>
+      ${diff > 1 ? `<button class="btn small" id="fixBalance">Fix balance</button>` : ""}`;
+    const fix = $("fixBalance");
+    if (fix) fix.onclick = fixBalance;
+  }
+
+  function fixBalance() {
+    const changed = [];
+    let guard = 50;
+    while (guard--) {
+      const { r, w } = tally();
+      if (Math.abs(r - w) <= 1) break;
+      const from = r > w ? "r" : "w", to = from === "r" ? "w" : "r";
+      // move the most recently added unconfirmed guest of the heavier colour
+      const g = state.guests.slice().reverse().find((x) => x.k === from && !x.confirmed);
+      if (!g) break;
+      if (!taken(g.c, to)) g.k = to;
+      else {
+        const unused = countries.filter((c) => !taken(c.id, to));
+        const fresh = unused.filter((c) => !state.guests.some((x) => x.c === c.id));
+        const pick = (fresh.length ? fresh : unused)[0];
+        if (!pick) break;
+        g.c = pick.id; g.k = to;
+      }
+      changed.push(g);
+    }
+    save(); render();
+    if (changed.length) {
+      alert(`Balanced. These guests have a new wine and need their new code:\n\n${changed.map((g) => `${g.n} → ${WE.findCountry(g.c).name} ${colourName(g.k)} (${WE.slotCode(g.c, g.k)})`).join("\n")}\n\nUse Send code next to each of them.`);
+    } else toast("Couldn't rebalance — confirmed bottles are left as they are");
+  }
+
+  $("add").onclick = () => {
+    const k = $("gk").value;
+    const { r, w } = tally();
+    const after = k === "r" ? r + 1 - w : w + 1 - r;
+    if (after > 1 && !confirm(`That would make ${after} more ${k === "r" ? "reds" : "whites"} than ${k === "r" ? "whites" : "reds"}. Add anyway?`)) return;
+    addGuest($("gc").value, k);
+  };
   $("gn").onkeydown = (e) => { if (e.key === "Enter") $("add").click(); };
   $("surprise").onclick = () => {
-    const free = [];
-    countries.forEach((c) => ["r", "w"].forEach((k) => { if (!taken(c.id, k)) free.push([c.id, k]); }));
-    if (!free.length) return toast("Every pairing is taken");
-    const fresh = free.filter(([c]) => !state.guests.some((g) => g.c === c));
-    const pool = fresh.length ? fresh : free;
-    const [c, k] = pool[Math.floor(Math.random() * pool.length)];
-    addGuest(c, k);
+    const s = pickSlot(state.guests);
+    if (!s) return toast("Every pairing is taken");
+    addGuest(s.c, s.k);
   };
 
   /* ---- auto-assign ---- */
@@ -158,14 +208,18 @@
   }
 
   function swapPanel(g, i) {
-    const opts = [];
-    countries.forEach((c) => ["r", "w"].forEach((k) => {
-      if (!taken(c.id, k)) opts.push(`<button class="slot-pick ${state.guests.some((x) => x.c === c.id) ? "" : "fresh"}" data-act="doSwap" data-i="${i}" data-c="${c.id}" data-k="${k}">
-        <span class="dot ${k === "r" ? "red" : "white"}"></span>${esc(c.name)} ${colourName(k)}</button>`);
-    }));
+    // Same colour keeps the red/white balance; the other colour only if it doesn't tip it.
+    const others = state.guests.filter((x) => x !== g);
+    const keeps = (k) => { const t = tally([...others, { k }]); return Math.abs(t.r - t.w) <= 1; };
+    const pickBtn = (c, k) => `<button class="slot-pick ${state.guests.some((x) => x.c === c.id && x !== g) ? "" : "fresh"}" data-act="doSwap" data-i="${i}" data-c="${c.id}" data-k="${k}">
+        <span class="dot ${k === "r" ? "red" : "white"}"></span>${esc(c.name)} ${colourName(k)}</button>`;
+    const group = (k) => countries.filter((c) => !taken(c.id, k)).map((c) => pickBtn(c, k)).join("");
+    const other = g.k === "r" ? "w" : "r";
+    const sameHtml = group(g.k);
+    const otherHtml = keeps(other) ? group(other) : "";
     return `<div class="panel">
-      <p class="hint" style="text-align:left;margin:0 0 10px">Still to give out — pick ${esc(g.n)}'s new country. <span class="fresh-key">Highlighted</span> countries nobody has yet.</p>
-      <div class="slot-picks">${opts.join("") || `<p class="empty">Every slot has been given out.</p>`}</div>
+      <p class="hint" style="text-align:left;margin:0 0 10px">Still to give out — pick ${esc(g.n)}'s new country. <span class="fresh-key">Highlighted</span> countries nobody has yet. Only options that keep reds and whites even are shown.</p>
+      <div class="slot-picks">${sameHtml + otherHtml || `<p class="empty">No open slot keeps the balance.</p>`}</div>
       <div class="row-btns" style="margin-top:12px"><button class="btn ghost small" data-act="close" data-i="${i}">Cancel</button></div>
     </div>`;
   }
@@ -312,7 +366,10 @@
     } catch (err) { toast("That file isn't a backup"); }
   };
 
-  function render() { fillCountrySelect(); renderGuests(); renderBoard(); renderMenu(); }
+  function render() {
+    if (document.activeElement !== $("gk")) $("gk").value = lighter();
+    fillCountrySelect(); renderBalance(); renderGuests(); renderBoard(); renderMenu();
+  }
   render();
   renderGallery();
 })();
