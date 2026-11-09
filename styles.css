@@ -264,3 +264,37 @@ footer { text-align: center; color: var(--faint); font-size: 12px; padding: 40px
 .tile .nm { font-family: var(--serif); font-size: 22px; margin: 4px 0 10px; }
 .tile .row-btns .btn { padding: 8px 10px; font-size: 10px; }
 .field textarea { resize: vertical; line-height: 1.5; }
+
+/* ---------- confirm / swap ---------- */
+.guest .acts { max-width: 210px; }
+.badge { font-family: var(--sans); font-size: 9.5px; letter-spacing: .18em; text-transform: uppercase; padding: 2px 7px; vertical-align: 4px; margin-left: 6px; border: 1px solid; }
+.badge.ok { color: var(--bg); background: var(--gold); border-color: var(--gold); }
+.badge.wait { color: var(--muted); border-color: var(--line); }
+.bottle { font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--gold); margin-top: 2px; }
+.panel { grid-column: 1 / -1; border: 1px solid var(--gold-soft); padding: 16px; margin-top: 4px; background: rgba(201,163,90,.04); }
+.slot-picks { display: flex; flex-wrap: wrap; gap: 8px; }
+.slot-pick {
+  display: inline-flex; align-items: center; gap: 8px; cursor: pointer; background: transparent;
+  border: 1px solid var(--line); color: var(--cream); padding: 7px 12px; font-size: 13px; border-radius: 999px;
+}
+.slot-pick .dot { width: 10px; height: 10px; }
+.slot-pick.fresh { border-color: var(--gold); background: rgba(201,163,90,.12); }
+.slot-pick:hover { border-color: var(--gold); }
+.fresh-key { color: var(--gold); border-bottom: 1px solid var(--gold); }
+.board .slot.open { background: rgba(201,163,90,.09); box-shadow: inset 2px 0 0 var(--gold); padding-left: 8px; }
+.board .slot.open small { color: var(--gold); font-style: italic; }
+
+/* ---------- menu ---------- */
+.menu-line { display: flex; gap: 12px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.menu-line:last-child { border-bottom: none; }
+.menu-line .dot { width: 11px; height: 11px; flex: none; transform: translateY(1px); }
+.mw { font-family: var(--serif); font-size: 20px; line-height: 1.2; }
+.mw em, .menu-item h3 em { color: var(--gold); }
+.mm { font-size: 13px; color: var(--muted); }
+.menu-sec { padding-top: 26px; }
+.menu-item { text-align: center; padding: 18px 0 26px; border-bottom: 1px solid var(--line); }
+.menu-item:last-child { border-bottom: none; }
+.menu-item .mini { color: var(--gold); max-width: 200px; margin: 0 auto 6px; opacity: .85; }
+.menu-item .mini svg { width: 100%; height: auto; }
+.menu-item h3 { font-family: var(--serif); font-weight: 400; font-size: 28px; line-height: 1.15; margin-top: 6px; }
+.menu-item .by { font-family: var(--serif); font-style: italic; color: var(--muted); margin-top: 4px; font-size: 17px; }

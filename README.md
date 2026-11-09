@@ -18,7 +18,8 @@ No logins or server: the guest list is saved in the host's browser (download a b
 | File | What it does |
 | --- | --- |
 | `index.html`, `app.js` | Guest invitation, reveal, suggestions and lock-in |
-| `host.html`, `host.js` | Host table: assignments, links, cellar board, backup |
+| `host.html`, `host.js` | Host table: auto-assign, codes, confirm bottles, swap guests, menu, backup |
+| `menu.html` | Shareable menu of confirmed bottles |
 | `event.js` | Event name, date, host and code salt |
 | `data.js` | Countries, suggested wines, notes, pairings and prices |
 | `motifs.js` | Line-art header for each country |

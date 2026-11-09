@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>The Wine Menu</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#130a0d">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M20 6h24c0 16-4 26-12 26S20 22 20 6z' fill='%237d1f30'/%3E%3Cpath d='M32 32v20M22 58h20' stroke='%23c9a35a' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css?v=20261109144657">
+</head>
+<body>
+  <div class="topbar">
+    <span class="mark">Wine Evening</span>
+    <span id="topDate"></span>
+  </div>
+  <main class="wrap" id="menu"></main>
+
+  <script src="event.js?v=20261109144657"></script>
+  <script src="data.js?v=20261109144657"></script>
+  <script src="motifs.js?v=20261109144657"></script>
+  <script src="shared.js?v=20261109144657"></script>
+  <script>
+  (function () {
+    const EV = window.EVENT || {};
+    const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    const fmt = (d) => { const t = new Date(d + "T12:00:00"); return isNaN(t) ? "" : t.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }); };
+    if (EV.date) document.getElementById("topDate").textContent = fmt(EV.date);
+
+    const raw = new URLSearchParams(location.search).get("m");
+    const data = raw ? WE.decodeRaw(raw) : null;
+    const root = document.getElementById("menu");
+    const valid = data && Array.isArray(data.w);
+    const list = valid ? data.w.filter((x) => Array.isArray(x) && WE.findCountry(x[0])) : [];
+
+    const head = `
+      <header class="hero" style="padding-bottom:20px">
+        <div class="eyebrow fade-in">${esc(EV.name || "Wine Evening")}</div>
+        <h1 class="fade-in d1" style="font-size:clamp(48px,12vw,84px)">The Menu</h1>
+        ${EV.date ? `<p class="native fade-in d2">${esc(fmt(EV.date))}</p>` : ""}
+      </header>
+      <div class="rule"><span class="diamond"></span></div>`;
+
+    if (!valid) {
+      root.innerHTML = head + `<p class="freedom" style="margin:40px auto">The menu will appear here once ${esc(EV.host || "your host")} shares it.</p>`;
+      return;
+    }
+
+    const sections = [["w", "Whites"], ["r", "Reds"]].map(([k, title]) => {
+      const items = list.filter((x) => x[1] === k);
+      if (!items.length) return "";
+      return `<section class="block menu-sec">
+        <div class="block-head"><div class="eyebrow"><span class="dot ${k === "r" ? "red" : "white"}" style="display:inline-block;width:10px;height:10px;vertical-align:-1px;margin-right:8px"></span>${title}</div></div>
+        ${items.map((x) => {
+          const c = WE.findCountry(x[0]);
+          return `<article class="menu-item fade-in">
+            <div class="mini">${window.MOTIFS[c.id] || ""}</div>
+            <div class="eyebrow">${esc(c.name)}</div>
+            <h3>${esc(x[3])}${x[4] ? ` <em>${esc(x[4])}</em>` : ""}</h3>
+            <p class="by">brought by ${esc(x[2])}</p>
+          </article>`;
+        }).join("")}
+      </section>`;
+    }).join("");
+
+    const more = (data.t || 0) - list.length;
+    root.innerHTML = head + (list.length ? sections : `<p class="freedom" style="margin:40px auto">No bottles confirmed yet.</p>`) +
+      `<footer>${more > 0 ? `${more} more bottle${more === 1 ? "" : "s"} still to be revealed.<br>` : ""}Please drink responsibly.</footer>`;
+  })();
+  </script>
+</body>
+</html>

@@ -15,18 +15,21 @@
     return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
   }
 
-  function decodeInvite(str) {
+  function decodeRaw(str) {
     try {
       let b64 = str.replace(/-/g, "+").replace(/_/g, "/");
       while (b64.length % 4) b64 += "=";
       const bin = atob(b64);
       const bytes = new Uint8Array(bin.length);
       for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-      const obj = JSON.parse(new TextDecoder().decode(xor(bytes)));
-      return obj && obj.n && obj.c && obj.k ? obj : null;
+      return JSON.parse(new TextDecoder().decode(xor(bytes)));
     } catch (e) {
       return null;
     }
+  }
+  function decodeInvite(str) {
+    const obj = decodeRaw(str);
+    return obj && obj.n && obj.c && obj.k ? obj : null;
   }
 
   const money = (n) => "£" + Number(n).toFixed(2);
@@ -89,5 +92,5 @@
   }
   const siteBase = () => location.href.replace(/[?#].*$/, "").replace(/(index|host)\.html$/, "");
 
-  window.WE = { encodeInvite, decodeInvite, money, shopLink, compareLink, wineSearcherLink, findCountry, slotCode, findByCode, siteBase };
+  window.WE = { encodeInvite, decodeInvite, decodeRaw, money, shopLink, compareLink, wineSearcherLink, findCountry, slotCode, findByCode, siteBase };
 })();

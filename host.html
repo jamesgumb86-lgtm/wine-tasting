@@ -7,7 +7,7 @@
   <meta name="robots" content="noindex">
   <meta name="theme-color" content="#130a0d">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M20 6h24c0 16-4 26-12 26S20 22 20 6z' fill='%237d1f30'/%3E%3Cpath d='M32 32v20M22 58h20' stroke='%23c9a35a' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles.css?v=202611081557">
+  <link rel="stylesheet" href="styles.css?v=20261109144657">
 </head>
 <body>
   <div class="topbar">
@@ -50,6 +50,8 @@
 
       <section class="card">
         <h2>Guests</h2>
+        <p class="hint" id="guestCount" style="text-align:left;margin:-6px 0 6px"></p>
+        <p class="hint" style="text-align:left;margin:0 0 8px">When a bottle photo arrives on WhatsApp, tap <b>Confirm</b>. If someone's struggling, tap <b>Swap</b> to give them a slot that hasn't been given out.</p>
         <div class="guest-list" id="guests"></div>
         <div class="row-btns" id="guestTools" style="margin-top:16px">
           <button class="btn ghost small" id="sendAll">Copy code list (for you)</button>
@@ -59,8 +61,18 @@
 
       <section class="card">
         <h2>The cellar board</h2>
-        <p class="hint" style="text-align:left;margin:-6px 0 12px">Every slot's code, and who has it.</p>
+        <p class="hint" style="text-align:left;margin:-6px 0 12px">Every slot's code and who has it. <span class="fresh-key">Highlighted</span> slots are still to give out — <span id="freeCount"></span>.</p>
         <div class="board" id="board"></div>
+      </section>
+
+      <section class="card">
+        <h2>The menu</h2>
+        <p class="hint" style="text-align:left;margin:-6px 0 12px">Confirmed bottles, whites first, by country. Share the link with guests whenever you like — send it again as more bottles come in.</p>
+        <div id="menuList"></div>
+        <div class="row-btns" id="menuTools" style="margin-top:16px">
+          <button class="btn small" id="shareMenu">Share menu with guests</button>
+          <button class="btn ghost small" id="viewMenu">View menu</button>
+        </div>
       </section>
 
       <section class="card">
@@ -82,10 +94,10 @@
   </main>
   <div class="toast" id="toast"></div>
 
-  <script src="event.js?v=202611081557"></script>
-  <script src="data.js?v=202611081557"></script>
-  <script src="motifs.js?v=202611081557"></script>
-  <script src="shared.js?v=202611081557"></script>
-  <script src="host.js?v=202611081557"></script>
+  <script src="event.js?v=20261109144657"></script>
+  <script src="data.js?v=20261109144657"></script>
+  <script src="motifs.js?v=20261109144657"></script>
+  <script src="shared.js?v=20261109144657"></script>
+  <script src="host.js?v=20261109144657"></script>
 </body>
 </html>
