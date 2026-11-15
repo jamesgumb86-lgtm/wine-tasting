@@ -407,6 +407,14 @@
   }
 
   const codeParam = (params.get("c") || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const nameParam = (params.get("n") || "").trim().slice(0, 40);
+
+  // Personal link (?c=CODE&n=Name): open straight to that guest's invitation, nothing to type.
+  if (codeParam && nameParam && WE.findByCode(codeParam)) {
+    store.set("we-guest", { code: codeParam, name: nameParam });
+    return start(fromCode(codeParam, nameParam));
+  }
+
   const savedGuest = store.get("we-guest");
   if (savedGuest && (!codeParam || codeParam === savedGuest.code)) {
     const inv = fromCode(savedGuest.code, savedGuest.name);

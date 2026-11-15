@@ -25,6 +25,7 @@
 
   const base = () => WE.siteBase();
   const shortLink = (code) => base() + "?c=" + code;
+  const personalLink = (g) => base() + "?c=" + WE.slotCode(g.c, g.k) + "&n=" + encodeURIComponent(g.n).replace(/['()*!]/g, (ch) => "%" + ch.charCodeAt(0).toString(16).toUpperCase());
   const taken = (c, k) => state.guests.some((g) => g.c === c && g.k === k);
   const colourName = (k) => (k === "r" ? "Red" : "White");
 
@@ -100,7 +101,7 @@
     }
     save(); render();
     if (changed.length) {
-      alert(`Balanced. These guests have a new wine and need their new code:\n\n${changed.map((g) => `${g.n} → ${WE.findCountry(g.c).name} ${colourName(g.k)} (${WE.slotCode(g.c, g.k)})`).join("\n")}\n\nUse Send code next to each of them.`);
+      alert(`Balanced. These guests have a new wine and need their new invitation:\n\n${changed.map((g) => `${g.n} → ${WE.findCountry(g.c).name} ${colourName(g.k)} (${WE.slotCode(g.c, g.k)})`).join("\n")}\n\nUse Send invite next to each of them.`);
     } else toast("Couldn't rebalance — confirmed bottles are left as they are");
   }
 
@@ -180,7 +181,7 @@
   }
 
   const inviteText = (g, code) =>
-    `Hi ${g.n}! 🍷 You're invited${EV.name ? " to " + EV.name : ""}.\n\nYour code is ${code}\nEnter it here to discover your wine: ${shortLink(code)}`;
+    `Hi ${g.n}! 🍷 You're invited${EV.name ? " to " + EV.name : ""}.\n\n${EV.host || "Your host"} has chosen a wine for you — open your personal invitation to find out what it is:\n${personalLink(g)}`;
 
   let openPanel = null; // { i, kind: "confirm" | "swap" }
 
@@ -242,7 +243,7 @@
         <div class="acts">
           <button class="btn ${g.confirmed ? "ghost" : ""} small" data-act="confirm" data-i="${i}">${g.confirmed ? "Edit" : "Confirm"}</button>
           ${g.confirmed ? "" : `<button class="btn ghost small" data-act="swap" data-i="${i}">Swap</button>`}
-          <button class="btn ghost small" data-act="send" data-i="${i}">Send code</button>
+          <button class="btn ghost small" data-act="send" data-i="${i}">Send invite</button>
           <button class="btn ghost small" data-act="copy" data-i="${i}">Copy</button>
           <button class="btn ghost small" data-act="del" data-i="${i}" aria-label="Remove ${esc(g.n)}">✕</button>
         </div>
@@ -282,8 +283,8 @@
       const now = `${WE.findCountry(g.c).name} ${colourName(g.k)}`;
       toast(`${g.n}: ${was} → ${now}`);
       const newCode = WE.slotCode(g.c, g.k);
-      if (confirm(`${g.n} is now ${now}. Send them the new code (${newCode}) now?`)) {
-        shareText(`Hi ${g.n}! 🍷 No problem — here's a new wine for you. Your new code is ${newCode}\nEnter it here: ${shortLink(newCode)}`);
+      if (confirm(`${g.n} is now ${now}. Send them their new invitation now?`)) {
+        shareText(`Hi ${g.n}! 🍷 No problem — here's a new wine for you. Open your new invitation here:\n${personalLink(g)}`);
       }
     }
     if (b.dataset.act === "del" && confirm(`Remove ${g.n}? Their code will still work, but the slot shows as free again.`)) {
