@@ -263,7 +263,7 @@
     if (!g) return;
     const act = b.dataset.act;
     const code = WE.slotCode(g.c, g.k);
-    if (act === "copy") copy(code, "Code");
+    if (act === "copy") copy(inviteText(g, code), "Invite message");
     if (act === "send") shareText(inviteText(g, code));
     if (act === "confirm" || act === "swap") { openPanel = openPanel && openPanel.i === i && openPanel.kind === act ? null : { i, kind: act }; renderGuests(); }
     if (act === "close") { openPanel = null; renderGuests(); }

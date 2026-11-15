@@ -90,7 +90,8 @@
     }
     return null;
   }
-  const siteBase = () => location.href.replace(/[?#].*$/, "").replace(/(index|host)\.html$/, "");
+  // Always the site's folder (e.g. https://…/wine-tasting/), whichever page or form of URL we're on.
+  const siteBase = () => location.origin + location.pathname.replace(/\/[^/]*$/, "/");
 
   window.WE = { encodeInvite, decodeInvite, decodeRaw, money, shopLink, compareLink, wineSearcherLink, findCountry, slotCode, findByCode, siteBase };
 })();
