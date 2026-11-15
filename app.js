@@ -251,8 +251,10 @@
       `🆘 Hi ${d.h || ""}, it's ${d.n} — I'm struggling to find my wine for ${d.e || "the wine evening"}.`,
       `I've got: ${c.name} · ${colour === "red" ? "Red" : "White"}`,
       band && band !== "Show all" ? `My budget: ${band}` : "",
-      "Could you swap me for something else? 🙏"
-    ].filter(Boolean).join("\n");
+      "Could you swap me for something else? 🙏",
+      "",
+      `${d.h || "Host"}, tap to flag & swap: ${WE.siteBase()}host.html?help=${WE.slotCode(c.id, colour === "red" ? "r" : "w")}&n=${encodeURIComponent(d.n).replace(/['()*!]/g, (ch) => "%" + ch.charCodeAt(0).toString(16).toUpperCase())}${band && band !== "Show all" ? "&b=" + encodeURIComponent(band) : ""}`
+    ].filter((x, i, a) => x !== "" || i === a.length - 2).join("\n");
     const status = document.getElementById("helpStatus");
     if (d.p) { window.open(waLink(d, text), "_blank", "noopener"); }
     else if (navigator.share) {

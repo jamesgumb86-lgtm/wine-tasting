@@ -313,3 +313,15 @@ footer { text-align: center; color: var(--faint); font-size: 12px; padding: 40px
 /* ---------- struggling? ---------- */
 .help-box { text-align: center; margin: 26px auto 0; max-width: 460px; padding: 20px; border: 1px dashed var(--gold-soft); }
 .help-box > p:first-child { color: var(--muted); margin-bottom: 12px; font-size: 15px; }
+
+/* ---------- needs help ---------- */
+.sos-alert { border: 1px solid #c4614f; background: rgba(196,97,79,.12); color: #f0c2b6; padding: 12px 14px; margin: -4px 0 14px; font-size: 14.5px; }
+.sos-alert b { color: #fff0ea; font-weight: 500; }
+.badge.sos { color: #fff; background: #b84c3c; border-color: #b84c3c; }
+.guest.is-help { background: rgba(196,97,79,.08); box-shadow: inset 3px 0 0 #c4614f; padding-left: 12px; padding-right: 8px; }
+.sos-line { font-size: 13px; color: #e8a797; margin-top: 3px; }
+.linkish { background: none; border: none; color: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; font-size: inherit; padding: 0; }
+@media (max-width: 560px) {
+  .guest { grid-template-columns: 1fr; }
+  .guest .acts { max-width: none; justify-content: flex-start; }
+}

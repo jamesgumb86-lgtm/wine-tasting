@@ -229,14 +229,18 @@
     $("guestTools").hidden = !state.guests.length;
     const done = state.guests.filter((g) => g.confirmed).length;
     $("guestCount").textContent = state.guests.length ? `${done} of ${state.guests.length} bottles confirmed` : "";
+    const sos = state.guests.filter((g) => g.help);
+    $("helpAlert").hidden = !sos.length;
+    $("helpAlert").innerHTML = sos.length ? `🆘 <b>${sos.map((g) => esc(g.n)).join(", ")}</b> ${sos.length === 1 ? "is" : "are"} struggling — tap <b>Swap</b> to give ${sos.length === 1 ? "them" : "each"} something else.` : "";
     if (!state.guests.length) { $("guests").innerHTML = `<p class="empty">No guests yet.</p>`; return; }
     $("guests").innerHTML = state.guests.map((g, i) => {
       const c = WE.findCountry(g.c);
       const code = WE.slotCode(g.c, g.k);
       const panel = openPanel && openPanel.i === i ? (openPanel.kind === "confirm" ? confirmPanel(g, i) : swapPanel(g, i)) : "";
-      return `<div class="guest ${g.confirmed ? "is-confirmed" : ""}">
+      return `<div class="guest ${g.confirmed ? "is-confirmed" : ""} ${g.help ? "is-help" : ""}" id="guest-${i}">
         <div>
-          <div class="who">${esc(g.n)} ${g.confirmed ? `<span class="badge ok">Confirmed</span>` : `<span class="badge wait">Awaiting bottle</span>`}</div>
+          <div class="who">${esc(g.n)} ${g.help ? `<span class="badge sos">Needs help</span>` : g.confirmed ? `<span class="badge ok">Confirmed</span>` : `<span class="badge wait">Awaiting bottle</span>`}</div>
+          ${g.help ? `<div class="sos-line">Struggling to find this one${g.helpBudget ? ` · budget ${esc(g.helpBudget)}` : ""} · <button class="linkish" data-act="dismissHelp" data-i="${i}">Dismiss</button></div>` : ""}
           <div class="what"><span class="dot ${g.k === "r" ? "red" : "white"}"></span>${esc(c ? c.name : g.c)} · ${colourName(g.k)} · <span class="code">${code}</span></div>
           ${g.confirmed ? `<div class="bottle">${esc(g.wine)}${g.vintage ? " · " + esc(g.vintage) : ""}</div>` : ""}
         </div>
@@ -268,6 +272,7 @@
     if (act === "send") shareText(inviteText(g, code));
     if (act === "confirm" || act === "swap") { openPanel = openPanel && openPanel.i === i && openPanel.kind === act ? null : { i, kind: act }; renderGuests(); }
     if (act === "close") { openPanel = null; renderGuests(); }
+    if (act === "dismissHelp") { delete g.help; delete g.helpBudget; save(); renderGuests(); }
     if (act === "saveConfirm") {
       const wine = $("cw" + i).value.trim();
       if (!wine) return toast("Add the wine name");
@@ -278,7 +283,7 @@
     if (act === "doSwap") {
       const was = `${WE.findCountry(g.c).name} ${colourName(g.k)}`;
       g.c = b.dataset.c; g.k = b.dataset.k;
-      delete g.wine; delete g.vintage; delete g.shop; g.confirmed = false;
+      delete g.wine; delete g.vintage; delete g.shop; delete g.help; delete g.helpBudget; g.confirmed = false;
       openPanel = null; save(); render();
       const now = `${WE.findCountry(g.c).name} ${colourName(g.k)}`;
       toast(`${g.n}: ${was} → ${now}`);
@@ -373,4 +378,25 @@
   }
   render();
   renderGallery();
+
+  /* ---- arriving from a guest's "Struggling?" message: ?help=CODE&n=Name&b=budget ---- */
+  (function flagFromLink() {
+    const q = new URLSearchParams(location.search);
+    const code = (q.get("help") || "").toUpperCase();
+    if (!code) return;
+    const slot = WE.findByCode(code);
+    const name = (q.get("n") || "").trim().toLowerCase();
+    let i = slot ? state.guests.findIndex((g) => g.c === slot.c && g.k === slot.k) : -1;
+    if (i < 0 && name) i = state.guests.findIndex((g) => g.n.toLowerCase() === name);
+    history.replaceState(null, "", location.pathname);
+    if (i < 0) return toast("Couldn't find that guest on this phone's list");
+    const g = state.guests[i];
+    g.help = true;
+    if (q.get("b")) g.helpBudget = q.get("b").slice(0, 20);
+    save();
+    openPanel = g.confirmed ? null : { i, kind: "swap" };
+    render();
+    setTimeout(() => { const el = $("guest-" + i); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 150);
+    toast(`${g.n} needs help — pick a new wine`);
+  })();
 })();
