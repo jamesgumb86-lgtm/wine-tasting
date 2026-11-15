@@ -64,7 +64,7 @@
   function fromCode(code, name) {
     const slot = WE.findByCode(code);
     if (!slot) return null;
-    return { key: code + "-" + name.toLowerCase(), data: { n: name, c: slot.c, k: slot.k, e: EV.name, d: EV.date, h: EV.host, p: "" } };
+    return { key: code + "-" + name.toLowerCase(), data: { n: name, c: slot.c, k: slot.k, e: EV.name, d: EV.date, h: EV.host, p: EV.phone || "" } };
   }
 
   /* ---------------- sealed invitation ---------------- */
@@ -176,6 +176,11 @@
           <div class="chips" id="chips" role="group" aria-label="Budget"></div>
           <div class="wines" id="wineList"></div>
           <p class="freedom">Found something else you love? Even better. Go with your instinct.</p>
+          ${inv.preview ? "" : `<div class="help-box">
+            <p>Can't find a ${colour} from ${esc(c.name)}, or it's over budget?</p>
+            <button type="button" class="btn ghost" id="helpBtn">Struggling? Let ${esc(d.h || "your host")} know</button>
+            <p class="hint" id="helpStatus"></p>
+          </div>`}
         </section>
 
         <div class="rule"><span class="diamond"></span></div>
@@ -193,6 +198,8 @@
     const budgetKey = inv.preview ? null : "we-budget-" + inv.key;
     renderWines(c, colour, (budgetKey && store.get(budgetKey)) || "all", budgetKey);
     renderLock(inv, c, colour);
+    const help = document.getElementById("helpBtn");
+    if (help) help.onclick = () => askForHelp({ ...d, _key: inv.key }, c, colour);
     const sw = document.getElementById("switch");
     if (sw) sw.onclick = (e) => { e.preventDefault(); store.del("we-guest"); window.scrollTo(0, 0); renderEntry(""); };
   }
@@ -236,6 +243,22 @@
       lock.price ? `Price: £${Number(lock.price).toFixed(2)}` : "",
       "Bottle photo attached 📸"
     ].filter(Boolean).join("\n");
+  }
+
+  async function askForHelp(d, c, colour) {
+    const band = (BANDS.find((b) => b.id === store.get("we-budget-" + d._key)) || {}).label;
+    const text = [
+      `🆘 Hi ${d.h || ""}, it's ${d.n} — I'm struggling to find my wine for ${d.e || "the wine evening"}.`,
+      `I've got: ${c.name} · ${colour === "red" ? "Red" : "White"}`,
+      band && band !== "Show all" ? `My budget: ${band}` : "",
+      "Could you swap me for something else? 🙏"
+    ].filter(Boolean).join("\n");
+    const status = document.getElementById("helpStatus");
+    if (d.p) { window.open(waLink(d, text), "_blank", "noopener"); }
+    else if (navigator.share) {
+      try { await navigator.share({ text }); } catch (e) { if (e && e.name === "AbortError") return; }
+    } else { window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank", "noopener"); }
+    if (status) status.textContent = `Message ready — once ${d.h || "your host"} swaps you, she'll send you a new invitation link.`;
   }
 
   function waLink(d, text) {

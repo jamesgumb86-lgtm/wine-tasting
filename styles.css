@@ -309,3 +309,7 @@ footer { text-align: center; color: var(--faint); font-size: 12px; padding: 40px
 .balance.off { border-color: #b86a5a; background: rgba(184,106,90,.08); }
 .balance.off .bal-msg { color: #e4a08f; }
 .balance .btn { margin-left: auto; }
+
+/* ---------- struggling? ---------- */
+.help-box { text-align: center; margin: 26px auto 0; max-width: 460px; padding: 20px; border: 1px dashed var(--gold-soft); }
+.help-box > p:first-child { color: var(--muted); margin-bottom: 12px; font-size: 15px; }
